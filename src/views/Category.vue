@@ -46,9 +46,9 @@ export default {
           align: 'center'
         },
         {
-          title: '创建时间',
+          title: '修改时间',
           align: 'center',
-          render: (h, { row }) => <span>{dayjs(row.createdAt).format('YYYY-MM-DD')}</span>
+          render: (h, { row }) => <span>{dayjs(row.updatedAt).format('YYYY-MM-DD')}</span>
         },
         {
           title: '文章数',

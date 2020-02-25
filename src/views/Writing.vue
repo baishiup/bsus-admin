@@ -6,7 +6,13 @@
       </div>
     </div>
     <div class="container" ref="containerRef">
-      <codemirror class="codemirror" ref="codemirror" :value="code" :options="options" @input="onCmCodeChange"></codemirror>
+      <codemirror
+        class="codemirror"
+        ref="codemirror"
+        :value="code"
+        :options="options"
+        @input="onCmCodeChange"
+      ></codemirror>
       <div class="show">
         <div class="markdown-body" v-html="content"></div>
       </div>
@@ -36,7 +42,13 @@
           </Select>
         </FormItem>
         <FormItem prop="tags" label="标签">
-          <Select v-model="editForm.tags" filterable multiple allow-create @on-create="handleCreateTag">
+          <Select
+            v-model="editForm.tags"
+            filterable
+            multiple
+            allow-create
+            @on-create="handleCreateTag"
+          >
             <Option v-for="(it, i) in tagList" :value="it.name" :key="i">{{ it.name }}</Option>
           </Select>
         </FormItem>
@@ -123,6 +135,7 @@ export default {
   },
   data() {
     return {
+      editType: 'add',
       code: '',
       content: '',
       markedDelay: 200,
@@ -160,9 +173,15 @@ export default {
   },
   methods: {
     async init() {
-      this.setDraft();
       await this.getCategory();
       await this.getTags();
+      if (this.$route.query.id) {
+        this.editType = 'edit';
+        await this.getArticleDetail();
+      } else {
+        this.editType = 'add';
+        this.setDraft();
+      }
     },
     setDraft() {
       let draft = window.localStorage.getItem('draft');
@@ -178,6 +197,19 @@ export default {
         // 本地化草稿
         window.localStorage.setItem('draft', newCode);
       }, this.markedDelay);
+    },
+    async getArticleDetail() {
+      let res = await this.$http(`/article/${this.$route.query.id}`);
+      this.editForm = {
+        title: res.result.data.title,
+        description: res.result.data.description,
+        thumb: res.result.data.thumb,
+        keywords: res.result.data.keywords,
+        state: 1,
+        category_id: res.result.data.category ? res.result.data.category.id : '',
+        tags: res.result.data.tags.split(',')
+      };
+      this.code = res.result.data.code;
     },
     async getCategory() {
       let res = await this.$http('/category');
@@ -202,13 +234,13 @@ export default {
       req.code = this.code;
       req.content = this.content;
       let res = await this.$http({
-        url: '/article',
-        method: 'post',
+        url: this.editType == 'add' ? '/article' : `/article/${this.$route.query.id}`,
+        method: this.editType == 'add' ? 'post' : 'put',
         data: req
       });
       if (res.status == 'success') {
         this.handlePublish = false;
-        this.$Message.success('发布成功');
+        this.$Message.success(this.editType == 'add' ? '发布成功' : '修改成功');
         window.localStorage.setItem('draft', '');
         this.$router.push('/article');
       } else {
