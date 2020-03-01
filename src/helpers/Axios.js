@@ -16,6 +16,9 @@ axios.interceptors.response.use(
   },
   err => {
     console.log(err.response);
+    if (err.response.status == 401) {
+      // axios.errorHandler_UNAUTHORIZED && axios.errorHandler_UNAUTHORIZED(err.response.data.message || '请重新登录');
+    }
     return err.response.data;
   }
 );

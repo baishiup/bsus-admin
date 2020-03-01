@@ -15,5 +15,11 @@ new Vue({
   el: '#app',
   router,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  created() {
+    Axios.errorHandler_UNAUTHORIZED = message => {
+      window.localStorage.removeItem('token');
+      this.$router.push('/');
+    };
+  }
 });

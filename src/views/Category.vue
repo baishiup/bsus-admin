@@ -53,7 +53,7 @@ export default {
         {
           title: '文章数',
           align: 'center',
-          key: 'articles'
+          render: (h, { row }) => <span>{row.articles.length}</span>
         },
         {
           title: '操作',

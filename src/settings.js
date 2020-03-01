@@ -1,3 +1,5 @@
 export default {
-  host: 'http://10.0.0.8:7001'
+  host: 'http://localhost:7001',
+  qiniuUrl: 'https://up-z2.qiniup.com',
+  cdnUrl: 'https://cdn.baishiup.com'
 };

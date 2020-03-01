@@ -1,6 +1,11 @@
 <template>
   <div id="Writing">
     <div class="sider">
+      <div class="left">
+        <Upload :before-upload="handleUpload" action>
+          <Button type="primary">添加图片</Button>
+        </Upload>
+      </div>
       <div class="right">
         <Button type="primary" @click="publishModal = true">发布</Button>
       </div>
@@ -26,6 +31,9 @@
         </FormItem>
         <FormItem prop="description" label="描述">
           <Input type="text" v-model="editForm.description"></Input>
+        </FormItem>
+        <FormItem prop="thumb" label="缩略图">
+          <UploadImg v-model="editForm.thumb"></UploadImg>
         </FormItem>
         <FormItem prop="keywords" label="关键字">
           <Input type="text" v-model="editForm.keywords" placeholder="英文逗号隔开"></Input>
@@ -61,6 +69,8 @@
 </template>
 
 <script>
+import settings from '../settings';
+import UploadImg from '../components/UploadImg';
 // main
 import { codemirror } from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
@@ -126,7 +136,8 @@ import 'highlight.js/styles/github.css';
 
 export default {
   components: {
-    codemirror
+    codemirror,
+    UploadImg
   },
   computed: {
     codemirrorRef() {
@@ -246,6 +257,27 @@ export default {
       } else {
         this.$Message.error(res.message);
       }
+    },
+    async handleUpload(file) {
+      let reqformData = new FormData();
+      let type = file.type.split('/')[1];
+      let filename = new Date().valueOf() + '.' + type;
+      reqformData.append('file', file);
+      reqformData.append('key', filename);
+
+      let token = await this.getQiniuToken();
+      reqformData.append('token', token);
+
+      let res = await this.$http.post(settings.qiniuUrl, reqformData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      this.onCmCodeChange(`${this.code}\n![图片描述](${settings.cdnUrl}/${res.key})`);
+
+      return false;
+    },
+    async getQiniuToken() {
+      let res = await this.$http('/qiniutoken');
+      return res.result.data;
     }
   }
 };
@@ -259,6 +291,11 @@ export default {
     line-height: 50px;
     width: 100%;
     position: relative;
+    .left {
+      position: absolute;
+      left: 0;
+      padding: 0 10px;
+    }
     .right {
       position: absolute;
       right: 0;
