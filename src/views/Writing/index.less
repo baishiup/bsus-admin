@@ -1,0 +1,63 @@
+#writing {
+  @mainPadding: 24px;
+  @toolsHeight: 40px;
+  @toolsPadding: 8px;
+  @headerHeight: 64px;
+  margin: -24px;
+  height: calc(100vh - @mainPadding * 2 - @headerHeight);
+  background-color: #fff;
+  transition: all 0.3s;
+  &.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100000;
+    margin: 0;
+  }
+  .tools {
+    padding: @toolsPadding;
+    height: @toolsHeight;
+    border-top: 1px solid #e6e9ed;
+    border-bottom: 1px solid #e6e9ed;
+    display: flex;
+    position: relative;
+    align-items: center;
+    &-item {
+      margin: 0 6px;
+      width: 27px;
+      cursor: pointer;
+      user-select: none;
+    }
+  }
+  .content {
+    height: calc(100% - @toolsHeight);
+    display: flex;
+    .code {
+      width: 50%;
+      height: 100%;
+    }
+    .show {
+      width: 50%;
+      height: 100%;
+      overflow-y: scroll;
+    }
+  }
+
+  .markdown-body {
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 15px;
+    overflow-y: scroll;
+    height: 100%;
+  }
+
+  @media (max-width: 767px) {
+    .markdown-body {
+      padding: 15px;
+    }
+  }
+}
