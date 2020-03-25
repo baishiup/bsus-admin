@@ -3,10 +3,10 @@ import { Tooltip, Upload, Modal, Button, Input, Radio, Form, Select, message, Di
 import { FileImageOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
 import Editor from '../../components/Editor';
 import { RcFile } from 'antd/lib/upload';
-import Axios, { AxiosResponse } from 'axios';
+import Axios from '../../helpers/Axios';
 import environment from '../../environment';
 
-import hljs from 'highlight.js';
+import * as hljs from 'highlight.js';
 import marked from 'marked';
 import 'github-markdown-css';
 import 'highlight.js/styles/github.css';
@@ -27,22 +27,20 @@ type editForm = {
   title: string;
   description: string;
   thumb: string;
-  content: string;
   keywords: string;
   state: number;
-  category_id: string | undefined;
-  tags: Array<string>;
+  category: string | undefined;
+  tag: Array<string>;
 };
 
 const initEditForm: editForm = {
   title: '',
   description: '',
   thumb: '',
-  content: '',
   keywords: '',
   state: 1,
-  category_id: undefined,
-  tags: []
+  category: undefined,
+  tag: []
 };
 const layout = {
   labelCol: { span: 5 },
@@ -68,17 +66,18 @@ const Writing = (props: any, ref: any) => {
     if (id) {
       setEditId(id);
       setLoadingPage(true);
-      (Axios.get(`/article/${id}`) as AxiosResponse['data']).then((res: any) => {
+      Axios.get(`/article/${id}`).then((res: any) => {
         setLoadingPage(false);
-        setCode(res.result.data.code);
-        setHtml(res.result.data.content);
+        setCode(res.data.map.code);
+        setHtml(res.data.map.html);
+        console.log(res.data.map.tag);
         form.setFieldsValue({
-          title: res.result.data.title,
-          description: res.result.data.description,
-          thumb: res.result.data.thumb,
-          keywords: res.result.data.keywords,
-          category_id: res.result.data.category.id,
-          tags: res.result.data.tags.split(',')
+          title: res.data.map.title,
+          description: res.data.map.description,
+          thumb: res.data.map.thumb,
+          keywords: res.data.map.keywords,
+          category: res.data.map.category ? res.data.map.category.id : '',
+          tag: res.data.map.tag.map((x: any) => x.id)
         });
       });
     }
@@ -86,12 +85,12 @@ const Writing = (props: any, ref: any) => {
   }, []);
 
   async function getCategoryList() {
-    const res = (await Axios.get('/category')) as AxiosResponse['data'];
-    setCategoryList(res.result.data);
+    const res = await Axios.get('/category');
+    setCategoryList(res.data.list);
   }
   async function getTagList() {
-    const res = (await Axios.get('/tag')) as AxiosResponse['data'];
-    setTagsList(res.result.data);
+    const res = await Axios.get('/tag');
+    setTagsList(res.data.list);
   }
 
   function handleChange(newCode: string) {
@@ -99,20 +98,17 @@ const Writing = (props: any, ref: any) => {
     setHtml(marked(newCode));
   }
   async function handleImage(file: RcFile) {
-    const token = (await Axios.get('/qiniutoken')) as AxiosResponse['data'];
+    const token = await Axios.get('/qiniu/getUploadToken');
     const req = new FormData();
     const type = file.type.split('/')[1];
     const filename = new Date().valueOf() + '.' + type;
     req.append('file', file);
     req.append('key', filename);
-    req.append('token', token.result.data);
-    const res: {
-      hash: string;
-      key: string;
-    } = await Axios.post(environment.qiniuUrl, req, {
+    req.append('token', token.data.map.token);
+    const res: { data: { hash: string; key: string } } = await Axios.post(environment.qiniuUrl, req, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-    const str = `${code}\n![图片描述](${environment.cdnUrl}/${res.key})`;
+    const str = `${code}\n![图片描述](${environment.cdnUrl}/${res.data.key})`;
     handleChange(str);
     return Promise.reject();
   }
@@ -122,7 +118,6 @@ const Writing = (props: any, ref: any) => {
   }
 
   async function handleSubmit(value: any) {
-    console.log(value);
     setLoadingSubmit(true);
 
     const req = {
@@ -131,32 +126,35 @@ const Writing = (props: any, ref: any) => {
       thumb: '',
       keywords: value.keywords,
       state: value.state,
-      category_id: value.category_id,
-      tags: value.tags.join(','),
-      code: code,
-      content: html
+      category: value.category,
+      tag: value.tag.join(','),
+      code: code
     };
     if (editId) {
     }
-    const res = (await Axios({
+    const res = await Axios({
       url: editId ? `/article/${editId}` : '/article',
       method: editId ? 'put' : 'post',
       data: req
-    })) as AxiosResponse['data'];
+    });
 
     setLoadingSubmit(false);
 
-    if (res.status === API_STATUS.SUCCESS) {
-      message.success(res.message);
+    if (res.data.status === API_STATUS.SUCCESS) {
+      message.success(res.data.message);
       props.history.push('/article');
     } else {
-      message.error(res.message);
+      message.error(res.data.message);
     }
   }
   async function addTag() {
-    await Axios.post('/tag', { name: addTagName });
-    setAddTagName('');
-    getTagList();
+    const res = await Axios.post('/tag', { name: addTagName });
+    if (res.data.status === API_STATUS.SUCCESS) {
+      setAddTagName('');
+      getTagList();
+    } else {
+      message.error(res.data.message);
+    }
   }
 
   return (
@@ -196,6 +194,7 @@ const Writing = (props: any, ref: any) => {
         <Modal
           title={'发布详情'}
           visible={visibleEditModal}
+          onCancel={_ => setVisibleEditModal(false)}
           footer={[
             <Button key="back" onClick={_ => setVisibleEditModal(false)}>
               返回
@@ -221,8 +220,8 @@ const Writing = (props: any, ref: any) => {
                 <Radio value={1}>发布</Radio>
               </Radio.Group>
             </Form.Item>
-            <Form.Item name="category_id" label="分类">
-              <Select placeholder="选择分类" onChange={e => form.setFieldsValue({ category_id: e })} allowClear>
+            <Form.Item name="category" label="分类">
+              <Select placeholder="选择分类" onChange={e => form.setFieldsValue({ category: e })} allowClear>
                 {categoryList.map((x: any, i) => (
                   <Option value={x.id} key={i}>
                     {x.name}
@@ -230,12 +229,12 @@ const Writing = (props: any, ref: any) => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="tags" label="标签">
+            <Form.Item name="tag" label="标签">
               <Select
                 placeholder="选择标签"
                 mode="multiple"
                 style={{ width: '100%' }}
-                onChange={e => form.setFieldsValue({ tags: e })}
+                onChange={e => form.setFieldsValue({ tag: e })}
                 allowClear
                 dropdownRender={menu => (
                   <div>

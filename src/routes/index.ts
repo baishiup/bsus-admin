@@ -2,8 +2,9 @@ import Home from '../views/Home';
 import Category from '../views/Category';
 import Article from '../views/Article';
 import Writing from '../views/Writing';
+import Tag from '../views/Tag';
 
-import { DesktopOutlined, PaperClipOutlined, EditOutlined, FolderOpenOutlined } from '@ant-design/icons';
+import { DesktopOutlined, SortDescendingOutlined, TagOutlined, FolderOpenOutlined } from '@ant-design/icons';
 
 type routes = {
   name: string;
@@ -36,7 +37,13 @@ const routes: Array<routes> = [
     name: '分类管理',
     path: '/category',
     component: Category,
-    icon: PaperClipOutlined
+    icon: SortDescendingOutlined
+  },
+  {
+    name: '标签管理',
+    path: '/tag',
+    component: Tag,
+    icon: TagOutlined
   }
 ];
 
