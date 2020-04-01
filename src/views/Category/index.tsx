@@ -5,6 +5,7 @@ import { ReloadOutlined } from '@ant-design/icons';
 import { API_STATUS } from '../../constants';
 import { ColumnsType } from 'antd/lib/table';
 import dayjs from 'dayjs';
+import UploadBox from '../../components/UploadBox';
 
 enum editTypes {
   ADD,
@@ -17,7 +18,7 @@ const Category = () => {
   const [dataSource, setDataSource] = useState([]);
 
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '' });
+  const [editForm, setEditForm] = useState({ name: '', thumb: '' });
   const [editType, setEditType] = useState<editTypes>(editTypes.ADD);
   const [editId, setEditId] = useState<string>('');
 
@@ -41,9 +42,9 @@ const Category = () => {
     console.log(row);
     setEditType(type);
     if (type === editTypes.ADD) {
-      setEditForm({ name: '' });
+      setEditForm({ name: '', thumb: '' });
     } else {
-      setEditForm({ name: row.name });
+      setEditForm({ name: row.name, thumb: row.thumb });
       setEditId(row.id);
     }
     setShowEditModal(true);
@@ -51,7 +52,8 @@ const Category = () => {
   // 新增
   async function handleSubmit() {
     const req = {
-      name: editForm.name
+      name: editForm.name,
+      thumb: editForm.thumb
     };
     const api = editType === editTypes.ADD ? '/category' : `/category/${editId}`;
     const method = editType === editTypes.ADD ? 'post' : 'put';
@@ -88,6 +90,12 @@ const Category = () => {
     {
       title: '分类名称',
       dataIndex: 'name'
+    },
+    {
+      title: '缩略图',
+      render: (row: any) => {
+        return <img src={row.thumb} style={{ height: '100px' }} alt="" />;
+      }
     },
     {
       title: '修改时间',
@@ -142,7 +150,12 @@ const Category = () => {
             </Button>
           ]}
         >
-          <Input value={editForm.name} placeholder="分类名称" onChange={e => setEditForm({ name: e.target.value })} />
+          <Input
+            value={editForm.name}
+            placeholder="分类名称"
+            onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+          />
+          <UploadBox value={editForm.thumb} onChange={e => setEditForm({ ...editForm, thumb: e })}></UploadBox>
         </Modal>
       </div>
     </Spin>

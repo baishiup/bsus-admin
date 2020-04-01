@@ -5,6 +5,7 @@ import Editor from '../../components/Editor';
 import { RcFile } from 'antd/lib/upload';
 import Axios from '../../helpers/Axios';
 import environment from '../../environment';
+import UploadBox from '../../components/UploadBox';
 
 import * as hljs from 'highlight.js';
 import marked from 'marked';
@@ -123,7 +124,7 @@ const Writing = (props: any, ref: any) => {
     const req = {
       title: value.title,
       description: value.description,
-      thumb: '',
+      thumb: value.thumb,
       keywords: value.keywords,
       state: value.state,
       category: value.category,
@@ -195,6 +196,7 @@ const Writing = (props: any, ref: any) => {
           title={'发布详情'}
           visible={visibleEditModal}
           onCancel={_ => setVisibleEditModal(false)}
+          forceRender
           footer={[
             <Button key="back" onClick={_ => setVisibleEditModal(false)}>
               返回
@@ -213,6 +215,9 @@ const Writing = (props: any, ref: any) => {
             </Form.Item>
             <Form.Item label="关键字" name="keywords">
               <Input placeholder="关键字(英文逗号隔开)" />
+            </Form.Item>
+            <Form.Item label="缩略图" name="thumb">
+              <UploadBox value="" onChange={e => form.setFieldsValue({ thumb: e })}></UploadBox>
             </Form.Item>
             <Form.Item name="state" label="发布状态">
               <Radio.Group>
