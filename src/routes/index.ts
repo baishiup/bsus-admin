@@ -3,8 +3,15 @@ import Category from '../views/Category';
 import Article from '../views/Article';
 import Writing from '../views/Writing';
 import Tag from '../views/Tag';
+import Setting from '../views/Setting';
 
-import { DesktopOutlined, SortDescendingOutlined, TagOutlined, FolderOpenOutlined } from '@ant-design/icons';
+import {
+  DesktopOutlined,
+  SortDescendingOutlined,
+  TagOutlined,
+  FolderOpenOutlined,
+  SettingOutlined
+} from '@ant-design/icons';
 
 type routes = {
   name: string;
@@ -44,6 +51,12 @@ const routes: Array<routes> = [
     path: '/tag',
     component: Tag,
     icon: TagOutlined
+  },
+  {
+    name: '站点设置',
+    path: '/setting',
+    component: Setting,
+    icon: SettingOutlined
   }
 ];
 
