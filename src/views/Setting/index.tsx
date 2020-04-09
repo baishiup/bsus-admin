@@ -25,7 +25,7 @@ export default () => {
       sitename: res.data.map.sitename,
       keywords: res.data.map.keywords,
       avatar: res.data.map.avatar,
-      description: res.data.map.description
+      description: res.data.map.description,
     });
   }
   function handleMenu(param: ClickParam) {
@@ -37,7 +37,7 @@ export default () => {
       sitename: value.sitename,
       keywords: value.keywords,
       avatar: value.avatar,
-      description: value.description
+      description: value.description,
     };
     setLoadingSubmit(true);
 
@@ -52,32 +52,34 @@ export default () => {
   }
   const layout = {
     labelCol: { span: 5 },
-    wrapperCol: { span: 16 }
+    wrapperCol: { span: 16 },
   };
   return (
-    <Spin spinning={loading}>
-      <Menu onClick={handleMenu} defaultSelectedKeys={['1']} mode="horizontal">
-        <Menu.Item key="1">基本设置</Menu.Item>
-      </Menu>
-      <div className="content">
-        <Form form={form} {...layout} onFinish={handleSubmit}>
-          <Form.Item label="头像" name="avatar">
-            <UploadBox value="" onChange={e => form.setFieldsValue({ avatar: e })}></UploadBox>
-          </Form.Item>
-          <Form.Item label="站点名称" name="sitename">
-            <Input placeholder="输入站点名称" />
-          </Form.Item>
-          <Form.Item label="关键字" name="keywords">
-            <Input placeholder="关键字(英文逗号隔开)" />
-          </Form.Item>
-          <Form.Item label="描述" name="description">
-            <Input placeholder="输入描述" />
-          </Form.Item>
-        </Form>
-        <Button key="submit" type="primary" loading={loadingSubmit} onClick={_ => form.submit()}>
-          保存
-        </Button>
-      </div>
-    </Spin>
+    <div id="Setting">
+      <Spin spinning={loading}>
+        <Menu onClick={handleMenu} defaultSelectedKeys={['1']} mode="horizontal">
+          <Menu.Item key="1">基本设置</Menu.Item>
+        </Menu>
+        <div className="content">
+          <Form form={form} {...layout} onFinish={handleSubmit}>
+            <Form.Item label="头像" name="avatar">
+              <UploadBox value="" onChange={(e) => form.setFieldsValue({ avatar: e })}></UploadBox>
+            </Form.Item>
+            <Form.Item label="站点名称" name="sitename">
+              <Input placeholder="输入站点名称" />
+            </Form.Item>
+            <Form.Item label="关键字" name="keywords">
+              <Input placeholder="关键字(英文逗号隔开)" />
+            </Form.Item>
+            <Form.Item label="描述" name="description">
+              <Input placeholder="输入描述" />
+            </Form.Item>
+          </Form>
+          <Button key="submit" type="primary" loading={loadingSubmit} onClick={(_) => form.submit()}>
+            保存
+          </Button>
+        </div>
+      </Spin>
+    </div>
   );
 };
